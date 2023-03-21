@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+
+    <script>
+        //检查用户名是否重复
+        function checkUid(){
+            let registerUid = $("#userUid").val().trim();
+            $.ajax({
+                url:"/souljourney_war_exploded/checkUserUid?userUid="+registerUid,
+                type:"get",
+                success:function (data){
+                    if (data == 0){
+                        //用户名重复
+                        $("#spanUid").html("");
+                        let spanUid = "<a style=\"color: rgb(189,0,0);\">*用户名重复，不可用</a>";
+                        $("#spanUid").append(spanUid);
+                    } else{
+                        //用户名可用
+                        $("#spanUid").html("");
+                        let spanUid = "<a style=\"color: rgb(41,189,0);\">*用户名可用</a>";
+                        $("#spanUid").append(spanUid);
+                    }
+                }
+
+            })
+        }
+
+        //检查昵称是否重复
+        function checkName(){
+            let registerName = $("#userName").val().trim();
+            $.ajax({
+                url:"/souljourney_war_exploded/checkUserName?userName="+registerName,
+                type:"get",
+                success:function (data){
+                    if (data == 0){
+                        //昵称重复
+                        $("#spanName").html("");
+                        let spanName = "<a style=\"color: rgb(189,0,0);\">*昵称重复，不可用</a>";
+                        $("#spanName").append(spanName);
+                    } else{
+                        $("#spanName").html("");
+                        let spanName = "<a style=\"color: rgb(41,189,0);\">*昵称可用</a>";
+                        $("#spanName").append(spanName);
+                    }
+                }
+            })
+        }
+
+        //检查两次密码是否输入一致
+        function checkPassword() {
+                let registerPassword = $("#userPassword").val().trim();
+                let registerPassword2 = $("#userPassword2").val().trim();
+                if (registerPassword2 != registerPassword){
+                    $("#spanPassword2").html("");
+                    let spanPassword2 = "<a style=\"color: rgb(189,0,0);\">*两次密码不一致</a>"
+                    $("#spanPassword2").append(spanPassword2);
+                    $("#sendBtn").addClass("disabled");
+                }else{
+                    $("#spanPassword2").html("");
+                    let spanPassword2 = "<a style=\"color: rgb(41,189,0);\">*密码一致</a>"
+                    $("#spanPassword2").append(spanPassword2);
+                    $("#sendBtn").removeClass("disabled");
+                }
+            }
+
+        //提交表单进行注册操作
+        function sendRegister(){
+            let registerUid = $("#userUid").val().trim();
+            let registerName = $("#userName").val().trim();
+            let registerPassword = $("#userPassword").val().trim();
+            let registerPassword2 = $("#userPassword2").val().trim();
+            let registerEmail = $("#userEmail").val().trim();
+            if (registerPassword2 != registerPassword){
+                alert("两次密码不一致！");
+            }else{
+                $.ajax({
+                    url:"/souljourney_war_exploded/registerUser?userUid="+registerUid+"&userPassword="+registerPassword+"&userName="+registerName+"&userEmail="+registerEmail,
+                    type:"get",
+                    success:function (data){
+                        if (data == 2){
+                            //空值情况
+                            alert("请填写完整所有信息！");
+                        } else {
+                            //注册成功
+                            alert("注册成功！将为您跳转到登录页面！");
+                            window.location.href="userLogin.html";
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+
+</head>
+<body class="registerBody">
+
+<div class="registerTop">
+    <div class="col-md-12">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+</div>
+
+<div>
+    <div class="col-md-1 registerLeft"></div>
+    <div class="col-md-10 registerMainBody">
+        <div class="register_form" style="margin-top: -325px;padding: 15px;">
+            <h3>用户注册</h3>
+            <form role="form">
+                <hr style="border: 1px solid #DCDCDC;">
+                <div class="form-group">
+                    <label for="userUid">注册用户名：</label><input type="text" class="form-control" id="userUid" onchange="checkUid()"/>
+                    <span id="spanUid">*由数字或字母组成，不能超过16个字符</span><br>
+                    <label for="userName">注册昵称：</label><input type="text" class="form-control" id="userName" onchange="checkName()"/>
+                    <span id="spanName">*由数字或字母组成，不能超过8个字符</span><br>
+                    <label for="userPassword">密码：</label><input type="password" class="form-control" id="userPassword" />
+                    <span>*由数字或字母组成，不能超过16个字符</span><br>
+                    <label for="userPassword2">确认密码：</label><input type="password" class="form-control" id="userPassword2" onchange="checkPassword()" />
+                    <span id="spanPassword2">*再次确认密码</span><br>
+                    <label for="userEmail">注册邮箱：</label><input type="email" class="form-control" id="userEmail" />
+                </div>
+                <a href="userLogin.html" style="margin:auto">>>立即登录</a> <a href="userFindPassword.html" style="margin-left: 20px">>>忘记密码</a>
+                <hr style="border: 1px solid #DCDCDC;">
+                <button id="sendBtn" type="button" class="btn btn-default disabled" style="background-color: #F2F2F2;margin-left:300px" onclick="sendRegister()">注册SOULJourney</button>
+                <hr style="border: 1px solid #DCDCDC;">
+            </form>
+        </div>
+    </div>
+    <div class="col-md-1 registerRight"></div>
+</div>
+
+<div class="registerBottom">
+    <hr style="border: 1px solid #DCDCDC;">
+    <h5 style="text-align: center">&copy;象征意义的版权说明</h5>
+</div>
+
+</body>
+</html>

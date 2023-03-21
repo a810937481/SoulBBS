@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>公告详情</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/ajaxLogin.js"></script>
+    <script src="static/js/searchPosts.js"></script>
+    <script src="static/js/postStateMessage.js"></script>
+
+    <script>
+        $(function (){
+            let url=window.location.search; //获取url中"?"符后的字串
+            let PostId;
+            console.log(url);
+            if(url.indexOf("?")!=-1){
+                let id = url.substr(url.indexOf("=")+1);
+                PostId = url.split('=');
+                console.log(PostId[1]);
+            };
+            //点击量+1
+            $.ajax({
+                url:"/souljourney_war_exploded/noticeHitsUp?noticeId="+PostId[1],
+                type:"post",
+                success:function(data){
+                    if (data){
+                        console.log("+1成功");
+                    }else {
+                        console.log("+1失败");
+                    }
+                }
+            })
+
+            $.ajax({
+                url:"/souljourney_war_exploded/getNoticeByNoticeId?noticeId="+PostId[1],
+                type:"get",
+                success:function (data){
+                    $("#noticeMain").html("");
+                    let postTitle = "<h1>"+ data.noticeTitle +"</h1>\n" +
+                        "<small>"+ data.noticeCreateTime +"&nbsp;&nbsp;热度："+ data.noticeHits +"</small>\n"
+                    "<hr style=\"border: 1px solid #DCDCDC;\">";
+                    $("#noticeMain").append(postTitle);
+                    let postContent =  "<p style='white-space: pre-line;word-break:break-all;width: 100%'>"+ data.noticeLongContent +"</p>" ;
+                    $("#noticeMain").append(postContent);
+                }
+            })
+
+
+        })
+
+    </script>
+
+</head>
+<body class="allUserBody">
+
+<!--顶部导航栏-->
+<div class="allTop">
+    <div class="col-md-10">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+    <!--登录区域-->
+    <div class="col-md-2">
+        <ul id="welcome" class="nav nav-pills">
+            <li role="presentation"><a href="userLogin.html">登录</a></li>
+            <li role="presentation"><a href="#">你好，旅客</a></li>
+        </ul>
+    </div>
+
+</div>
+
+
+<!--主界面-->
+<div class="mainBody">
+
+    <!--主界面导航栏-->
+    <nav class="navbar navbar-default mainNavbar">
+        <div class="container-fluid">
+            <!-- LOGO -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SOULJourney</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="index.html">首页 <span class="sr-only">(current)</span></a></li>
+                    <li><a href="articleList.html">文章</a></li>
+                    <li><a href="imageList.html">绘画</a></li>
+                    <li><a href="videoList.html">视频</a></li>
+                    <li><a href="chatList.html">杂谈</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" id="searchpostTitle">
+                    </div>
+                    <button type="button" class="btn btn-default" onclick="findpost()">站内搜索</button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <!--主界面内容-->
+        <div class="col-md-10 mainContent">
+            <div class="row">
+                <!--路径导航-->
+                <ol class="breadcrumb">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="noticeList.html">公告列表</a></li>
+                    <li class="active">公告详情</li>
+                </ol>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+                <div class="jumbotron">
+                    <div class="container" >
+                        <div id="noticeMain" style="width: 99%;margin-left: auto;margin-right: auto">
+
+                        </div>
+                    </div>
+                </div>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>
+
+</body>
+</html>

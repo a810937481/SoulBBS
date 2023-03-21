@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.FriendMapper">
+
+    <insert id="addFriend">
+        insert into friends(friendsUserId,friendsFollowedId) values (#{friendsUserId},#{friendsFollowedId})
+    </insert>
+
+    <delete id="deleteFriend" parameterType="Integer">
+        delete from friends where friendsUserId=#{friendsUserId} and friendsFollowedId=#{friendsFollowedId}
+    </delete>
+
+    <select id="insureFollow" parameterType="int" resultType="int">
+        select count(*) from friends where friendsUserId=#{friendsUserId} and friendsFollowedId=#{friendsFollowedId}
+    </select>
+
+    <select id="findFollow" parameterType="int" resultType="com.entity.Friend">
+        select * from friends where friendsUserId=#{friendsUserId}
+    </select>
+
+    <select id="findFan" parameterType="int" resultType="com.entity.Friend">
+        select * from friends where friendsFollowedId=#{friendsFollowedId}
+    </select>
+
+</mapper>

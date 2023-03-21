@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.NoticeMapper">
+
+    <select id="getIndexNotices" parameterType="Integer" resultType="com.entity.Notice">
+        select * from notice order by noticeCreateTime desc limit 5;
+    </select>
+
+    <select id="getNotices" parameterType="Integer" resultType="com.entity.Notice">
+        SELECT * FROM notice WHERE noticeId <![CDATA[<=]]>
+            (select noticeId from notice order by noticeId desc limit #{pageIndex}, 1)
+        ORDER BY noticeId desc LIMIT 10
+    </select>
+
+    <select id="getNoticeByNoticeId" parameterType="int" resultType="com.entity.Notice">
+        select * from notice where noticeId = #{noticeId}
+    </select>
+
+    <select id="getNoticeCounts" resultType="int">
+        select count(*) from notice
+    </select>
+
+    <insert id="addNotice">
+        insert into notice(noticeTitle,noticeAdminId,noticeLongContent) values (#{noticeTitle},#{noticeAdminId},#{noticeLongContent})
+    </insert>
+
+    <delete id="deleteNotice" parameterType="Integer">
+        delete from notice where noticeId=#{noticeId}
+    </delete>
+
+    <update id="updateNotice">
+        update notice set
+                          noticeTitle = #{noticeTitle},noticeLongContent = #{noticeLongContent}
+        where noticeId = #{noticeId}
+    </update>
+
+    <update id="noticeHitsUp">
+        update notice set
+            noticeHits = noticeHits + 1
+        where
+            noticeId = #{noticeId}
+    </update>
+
+</mapper>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>视频</title>
+
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/ajaxLogin.js"></script>
+    <script src="static/js/searchPosts.js"></script>
+    <script src="static/js/postStateMessage.js"></script>
+
+    <script>
+        $(function (){
+
+            //获取通过审核视频的总数
+            $.ajax({
+                url:"/souljourney_war_exploded/getPostsCountByPostType?postType="+3,
+                type:"get",
+                success:function (data){
+                    $("#allPageNumber").html("");
+                    let allPageCount = Math.ceil(data.postsCount/10);
+                    $("#allPageNumber").append(allPageCount);
+                    console.log("文章类帖子总页数为："+allPageCount);
+                }
+            })
+
+
+
+            //第一页的默认内容
+            $.ajax({
+                url:"/souljourney_war_exploded/getVideoPosts?pageIndex="+0,
+                type:"get",
+                success:function (data){
+                    $("#postsList").html("");
+                    $.each(data , function (key,val){
+                        let postItem = "                    <li class=\"list-group-item\">\n" +
+                            "                        <span class=\"badge\">"+ val.postHits +"</span>\n" +
+                            "                        <a href=\"videoContent.html?postId="+ val.postId +"\">"+ val.postTitle +"</a>\n" +
+                            "                        <small>"+ val.postCreateTime +"</small>\n" +
+                            "                    </li>" ;
+                        $("#postsList").append(postItem);
+                    })
+                }
+
+            })
+        })
+
+
+        //分页按钮事件
+        function pageClick(pageOrder) {
+            console.log(pageOrder);
+            //上传到数据库查询的实际页码为：网页页码 - 1，如：网页显示的页码：第1页 → 实际上传的页码：0
+            let nextPage;//实际上传的下一页页码下标
+            let nowPage = document.getElementById("nowPageNumber").innerText;//当前的页码
+            let allPageCount = document.getElementById("allPageNumber").innerText;//网页所需分页页数
+
+            if (pageOrder == "previousPage") {//点击上一页按钮
+                //跳转到上一页
+                if (nowPage == 1){
+                    //如果已经是首页，点击上一页按钮则跳转回首页
+                    console.log("已经是首页");
+                    nextPage = 0;
+                }else {
+                    console.log("到上一页的实际页码下标");
+                    nextPage = nowPage - 2;
+                }
+            } else if (pageOrder == "nextPage") {//点击下一页按钮
+                //跳转到下一页
+                if (nowPage == allPageCount){
+                    //如果已经是最后一页，点击下一页按钮则跳转回最后一页
+                    console.log("已经是尾页");
+                    nextPage = nowPage - 1;
+                }else {
+                    console.log("到下一页的实际页码下标");
+                    nextPage = nowPage;
+                }
+            }
+
+            console.log(nextPage);
+
+            //改变当前页面的页码
+            $("#nowPageNumber").html("");
+            $("#nowPageNumber").append(Number(nextPage)+Number("1"));
+
+            //获取页码对应的页面数据
+            $.ajax({
+                url:"/souljourney_war_exploded/getVideoPosts?pageIndex="+nextPage,
+                type:"get",
+                success:function (data){
+                    $("#postsList").html("");
+                    $.each(data , function (key,val){
+                        let postItem = "                    <li class=\"list-group-item\">\n" +
+                            "                        <span class=\"badge\">"+ val.postHits +"</span>\n" +
+                            "                        <a href=\"videoContent.html?postId="+ val.postId +"\">"+ val.postTitle +"</a>\n" +
+                            "                        <small>创建时间："+ val.postCreateTime +"</small>\n" +
+                            "                    </li>" ;
+                        $("#postsList").append(postItem);
+                    })
+                }
+            })
+        }
+
+        //提交视频帖
+        function submitArticle(){
+            let videoTitle = $("#inputArticleTitle").val();
+            let videoContent = $("#inputArticleContent").val();
+            let bilibilihtml = $("#inputBilibiliHtml").val();
+            console.log("videoTitle:"+videoTitle);
+            console.log("videoContent:"+videoContent);
+            console.log("bilibilihtml:"+bilibilihtml);
+            $.ajax({
+                url:"/souljourney_war_exploded/addVideoPosts?postTitle=[转载]"+videoTitle+"&postUserId="+$.cookie("userId")+"&postContent="+videoContent+"&postVideo="+bilibilihtml,
+                type:"get",
+                success:function (data){
+                    if (data == 2){
+                        //空值情况
+                        alert("请填写完整！");
+                    } else {
+                        //发布成功
+                        alert("发布成功！");
+                        location.reload(true);
+                    }
+                }
+            })
+        }
+
+    </script>
+
+
+</head>
+<body class="allUserBody">
+
+<!--顶部导航栏-->
+<div class="allTop">
+    <div class="col-md-10">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+    <!--登录区域-->
+    <div class="col-md-2">
+        <ul id="welcome" class="nav nav-pills">
+            <li role="presentation"><a href="userLogin.html">登录</a></li>
+            <li role="presentation"><a href="#">你好，旅客</a></li>
+        </ul>
+    </div>
+
+</div>
+
+
+<!--主界面-->
+<div class="mainBody">
+
+    <!--主界面导航栏-->
+    <nav class="navbar navbar-default mainNavbar">
+        <div class="container-fluid">
+            <!-- LOGO -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SOULJourney</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="index.html">首页 <span class="sr-only">(current)</span></a></li>
+                    <li><a href="articleList.html">文章</a></li>
+                    <li><a href="imageList.html">绘画</a></li>
+                    <li class="active"><a href="videoList.html">视频</a></li>
+                    <li><a href="chatList.html">杂谈</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" id="searchpostTitle">
+                    </div>
+                    <button type="button" class="btn btn-default" onclick="findpost()">站内搜索</button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <!--主界面内容-->
+        <div class="col-md-10 mainContent">
+            <div class="row">
+                <!--路径导航-->
+                <ol class="breadcrumb">
+                    <li><a href="index.html">首页</a></li>
+                    <li class="active">视频</li>
+                </ol>
+
+
+                <!--文章列表-->
+                <ul class="list-group" id="postsList">
+                </ul>
+
+                <!--分页按钮-->
+                <nav aria-label="Page navigation">
+                    <ul class="pager">
+                        <li id="previousBtn" onclick="pageClick('previousPage')"><a href="#">Previous</a></li>
+                        <li><span>当前页码：<a id="nowPageNumber">1</a></span></li>
+                        <li><span>总页数：<a id="allPageNumber">1</a></span></li>
+                        <li id="nextBtn" onclick="pageClick('nextPage')"><a href="#">Next</a></li>
+                    </ul>
+                </nav>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+                <div class="jumbotron">
+                    <form id="inputArticle" style="width: 90%;margin-left: auto;margin-right: auto">
+                        <div class="form-group">
+                            <label for="inputArticleTitle">视频标题</label>
+                            <input type="text" class="form-control" id="inputArticleTitle" placeholder="请输入想转载的视频标题">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputBilibiliHtml">B站视频代码</label>
+                            <input type="text" class="form-control" id="inputBilibiliHtml" placeholder="请输入想转载的B站视频代码">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputArticleContent">视频介绍</label>
+                            <textarea id="inputArticleContent" class="form-control" rows="10" style="resize:none;" placeholder="请输入视频介绍"></textarea><br>
+                            <p><a class="btn btn-primary btn-lg" href="#" role="button" onclick="submitArticle()">发布</a></p>
+                        </div>
+                    </form>
+                </div>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>
+
+</body>
+</html>

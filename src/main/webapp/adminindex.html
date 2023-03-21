@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>SOULJourney后台管理</title>
+
+    <!-- jQuery -->
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="static/js/bootstrap.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="static/js/plugins/morris/raphael.min.js"></script>
+    <script src="static/js/plugins/morris/morris.min.js"></script>
+    <script src="static/js/plugins/morris/morris-data.js"></script>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="static/css/sb-admin.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="static/css/plugins/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- 检测登录情况 -->
+    <script src="static/js/adminLoginSet.js"></script>
+
+    <!-- 绘制图表 -->
+    <script src="static/js/echarts.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+
+        //开启权限按钮
+        function onRights(adminId){
+
+            $.ajax({
+                url:"/souljourney_war_exploded/onAdminRights?rightsAdminId="+adminId,
+                type:"post",
+                success:function (data){
+                    if (data){
+                        alert("已开启该管理员所有权限");
+                    }else {
+                        alert("系统出错，开启失败。");
+                    }
+                }
+            })
+
+        }
+
+        //关闭权限按钮
+        function offRights(adminId){
+
+            $.ajax({
+                url:"/souljourney_war_exploded/offAdminRights?rightsAdminId="+adminId,
+                type:"post",
+                success:function (data){
+                    if (data){
+                        alert("已关闭该管理员所有权限");
+                    }else {
+                        alert("系统出错，关闭失败。");
+                    }
+                }
+            })
+
+        }
+
+        //添加新管理员
+        function addNewAdmin(){
+
+            let newAdminUid = $("#newAdminUid").val().trim();
+            let newAdminPassword = $("#newAdminPassword").val().trim();
+            let newAdminName = $("#newAdminName").val().trim();
+            if (newAdminUid == ""||newAdminPassword == ""||newAdminName == ""){
+                alert("输入框内不得为空！");
+            }else{
+                $.ajax({
+                    url:"/souljourney_war_exploded/addAdmin?adminUid="+newAdminUid+"&adminPassword="+newAdminPassword+"&adminName="+newAdminName,
+                    type:"get",
+                    success:function (data){
+                        if (data == 2){
+                            //空值情况
+                            alert("请填写完整所有信息！");
+                        } else if (data == 1){
+                            //注册成功
+                            alert("注册成功！");
+                            location.reload(true);
+                        }else {
+                            alert("用户名已存在！");
+                        }
+                    }
+                });
+            }
+
+        }
+
+        //分页按钮事件
+        function pageClick(pageOrder) {
+            console.log(pageOrder);
+            //上传到数据库查询的实际页码为：网页页码 - 1，如：网页显示的页码：第1页 → 实际上传的页码：0
+            let nextPage;//实际上传的下一页页码下标
+            let nowPage = document.getElementById("nowPageNumber").innerText;//当前的页码
+            let allPageCount = document.getElementById("allPageNumber").innerText;//网页所需分页页数
+
+            if (pageOrder == "previousPage") {//点击上一页按钮
+                //跳转到上一页
+                if (nowPage == 1){
+                    //如果已经是首页，点击上一页按钮则跳转回首页
+                    console.log("已经是首页");
+                    nextPage = 0;
+                }else {
+                    console.log("到上一页的实际页码下标");
+                    nextPage = nowPage - 2;
+                }
+            } else if (pageOrder == "nextPage") {//点击下一页按钮
+                //跳转到下一页
+                if (nowPage == allPageCount){
+                    //如果已经是最后一页，点击下一页按钮则跳转回最后一页
+                    console.log("已经是尾页");
+                    nextPage = nowPage - 1;
+                }else {
+                    console.log("到下一页的实际页码下标");
+                    nextPage = nowPage;
+                }
+            }
+
+            console.log(nextPage);
+
+            //改变当前页面的页码
+            $("#nowPageNumber").html("");
+            $("#nowPageNumber").append(Number(nextPage)+Number("1"));
+
+            //获取页码对应的页面数据
+            $.ajax({
+                url:"/souljourney_war_exploded/getAllAdmin?pageIndex="+nextPage,
+                type:"get",
+                success:function (data){
+                    $("#adminTable").html("");
+                    $.each(data , function (key,val){
+                        let adminItem = "<tr>\n" +
+                            " <td>"+ val.adminId +"</td>\n" +
+                            "<td>"+ val.adminName +"</td>\n" +
+                            "<td><a href=\"#\" role=\"button\" onclick=\"onRights("+ val.adminId +")\">开启</a>&nbsp;/<a href=\"#\" role=\"button\" onclick=\"offRights("+ val.adminId +")\">&nbsp;关闭</a></td>\n" +
+                            "</tr>" ;
+                        $("#adminTable").append(adminItem);
+                    })
+                    let newAdmin = "<tr>\n" +
+                        "<td><a href=\"#\" role=\"button\" data-toggle=\"modal\" data-target=\"#myModal\">添加新管理员</a></td>\n" +
+                        "<td></td>\n" +
+                        "<td></td>\n" +
+                        "</tr>";
+                    $("#adminTable").append(newAdmin);
+                }
+            })
+        }
+
+        $(function (){
+
+            if ($.cookie("rightsBest")=="1"){
+
+                //获取管理员的总数
+                $.ajax({
+                    url:"/souljourney_war_exploded/getAdminCounts",
+                    type:"get",
+                    success:function (data){
+                        $("#allPageNumber").html("");
+                        let allPageCount = Math.ceil(data.adminCounts/5);
+                        $("#allPageNumber").append(allPageCount);
+                        console.log("文章类帖子总页数为："+allPageCount);
+                    }
+                })
+
+                //第一页管理员列表
+                $.ajax({
+                    url:"/souljourney_war_exploded/getAllAdmin?pageIndex="+0,
+                    type:"get",
+                    success:function (data){
+                        $("#adminTable").html("");
+                        $.each(data , function (key,val){
+                            let adminItem = "<tr>\n" +
+                                " <td>"+ val.adminId +"</td>\n" +
+                                "<td>"+ val.adminName +"</td>\n" +
+                                "<td><a href=\"#\" role=\"button\" onclick=\"onRights("+ val.adminId +")\">开启</a>&nbsp;/<a href=\"#\" role=\"button\" onclick=\"offRights("+ val.adminId +")\">&nbsp;关闭</a></td>\n" +
+                                "</tr>" ;
+                            $("#adminTable").append(adminItem);
+                        })
+                        let newAdmin = "<tr>\n" +
+                            "<td><a href=\"#\" role=\"button\" data-toggle=\"modal\" data-target=\"#myModal\">添加新管理员</a></td>\n" +
+                            "<td></td>\n" +
+                            "<td></td>\n" +
+                            "</tr>";
+                        $("#adminTable").append(newAdmin);
+                    }
+                })
+
+            }
+
+            //绘制图表
+            let myChart = echarts.init(document.getElementById('echart'));
+
+            // 指定图表的配置项和数据
+            $.ajax({
+                url:"/souljourney_war_exploded/chartPost",
+                type:"get",
+                success:function (data){
+                    let x = new Array();
+                    let y = new Array();
+                    $.each(data , function (key,val){
+                        x.push(val.word);
+                        y.push(val.count);
+                        // option.xAxis.data.push();
+                        // option.series.data.push();
+                    })
+                    let option = {
+                        title: {
+                            text: '论坛词汇频率表'
+                        },
+                        tooltip: {},
+                        legend: {
+                            data: ['出现次数']
+                        },
+                        xAxis: {
+                            data: x
+                        },
+                        yAxis: {},
+                        series: [
+                            {
+                                name: '出现次数',
+                                type: 'bar',
+                                data: y
+                            }
+                        ]
+                    };
+
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+
+                }
+            })
+
+        })
+    </script>
+
+
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- 左上LOGO -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="adminindex.html">SOULJourney后台管理</a>
+            </div>
+            <!-- 顶边栏下拉框 -->
+            <ul class="nav navbar-right top-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="AdminName"><i class="fa fa-user"></i> 管理员 <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#" id="moveCookie"><i class="fa fa-fw fa-power-off"></i>退出登录</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- 侧边栏 -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li class="active">
+                        <a href="adminindex.html"><i class="fa fa-fw fa-desktop"></i> 首页/人事</a>
+                    </li>
+                    <li>
+                        <a href="adminNotice.html"><i class="fa fa-fw fa-dashboard"></i> 公告管理</a>
+                    </li>
+                    <li>
+                        <a href="adminPost.html"><i class="fa fa-fw fa-table"></i> 帖子管理</a>
+                    </li>
+                    <li>
+                        <a href="adminUser.html"><i class="fa fa-fw fa-edit"></i> 用户管理</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            首页 <small>信息查询/人事管理</small>
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li class="active">
+                                <i class="fa fa-desktop"></i> 首页
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- 图表 -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="echart" style="width: 100%;height:400px;">
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- 管理员列表 -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2>管理员人事管理</h2>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th>管理员编号</th>
+                                    <th>管理员名字</th>
+                                    <th>后台功能开关</th>
+                                </tr>
+                                </thead>
+                                <tbody id="adminTable">
+                                <tr>
+                                    <td>无权查看</td>
+                                    <td>无权查看</td>
+                                    <td>无权查看</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--分页按钮-->
+                        <nav aria-label="Page navigation">
+                            <ul class="pager">
+                                <li id="previousBtn" onclick="pageClick('previousPage')"><a href="#">Previous</a></li>
+                                <li><span>当前页码：<a id="nowPageNumber">1</a></span></li>
+                                <li><span>总页数：<a id="allPageNumber">1</a></span></li>
+                                <li id="nextBtn" onclick="pageClick('nextPage')"><a href="#">Next</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+
+    <!-- 添加管理员的Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">添加管理员</h4>
+                </div>
+                <div class="modal-body">
+                    <label for="newAdminUid">注册用户名：</label><input type="text" class="form-control" id="newAdminUid"/>
+                    <label for="newAdminPassword">注册密码：</label><input type="text" class="form-control" id="newAdminPassword"/>
+                    <label for="newAdminName">注册名字：</label><input type="text" class="form-control" id="newAdminName"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewAdmin()">Add New Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

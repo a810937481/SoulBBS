@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/ajaxLogin.js"></script>
+    <script src="static/js/searchPosts.js"></script>
+    <script src="static/js/postStateMessage.js"></script>
+
+    <script>
+
+        //删除自己的帖子
+        function deletepost(postid){
+            $.ajax({
+                url:"/souljourney_war_exploded/deletePost?postId="+postid,
+                type:"post",
+                success:function(data){
+                    if (data){
+                        alert("删除成功");
+                        location.reload(true);
+                    }else {
+                        alert("删除失败");
+                    }
+                }
+            })
+        }
+
+        //编辑自己的帖子
+        function updatepost(postid){
+            $.ajax({
+                url:"/souljourney_war_exploded/getPost?postId="+postid,
+                type:"get",
+                success:function(data){
+                    if (data.postType == 1){
+                        $("#newPostTitle").val(data.postTitle);
+                        $("#newPostContent").val(data.postChat);
+                        $("#checkPostId").html("");
+                        $("#checkPostId").append(data.postId);
+                        $("#foot").html("");
+                        let btn = "<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n" +
+                            "<button type=\"button\" class=\"btn btn-primary\" onclick=\"updateBtn("+ data.postType +")\">Update Post</button>";
+                        $("#foot").append(btn);
+                    }else{
+                        $("#newPostTitle").val(data.postTitle);
+                        $("#newPostContent").val(data.postContent);
+                        $("#checkPostId").html("");
+                        $("#checkPostId").append(data.postId);
+                        $("#foot").html("");
+                        let btn = "<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n" +
+                            "<button type=\"button\" class=\"btn btn-primary\" onclick=\"updateBtn("+ data.postType +")\">Update Post</button>";
+                        $("#foot").append(btn);
+                    }
+                }
+            })
+        }
+
+        function updateBtn(postyype){
+            let postid = document.getElementById("checkPostId").innerText;
+            let posttitle = $("#newPostTitle").val();
+            let postcontent = $("#newPostContent").val();
+            if (postyype == 1){
+                $.ajax({
+                    url:"/souljourney_war_exploded/updateChatPost?postId="+postid+"&postTitle="+posttitle+"&postChat="+postcontent,
+                    type:"post",
+                    success:function(data){
+                        if (data){
+                            alert("修改成功");
+                            location.reload(true);
+                        }else {
+                            alert("修改失败");
+                        }
+                    }
+                })
+            }else{
+                $.ajax({
+                    url:"/souljourney_war_exploded/updatePost?postId="+postid+"&postTitle="+posttitle+"&postContent="+postcontent,
+                    type:"post",
+                    success:function(data){
+                        if (data){
+                            alert("修改成功");
+                            location.reload(true);
+                        }else {
+                            alert("修改失败");
+                        }
+                    }
+                })
+            }
+
+        }
+
+        $(function (){
+                //个人中心昵称标签替换
+                $("#spanUserName").html("");
+                let userName = "<h2>"+$.cookie("userName")+"</h2>";
+                $("#spanUserName").append(userName);
+
+                let userId = $.cookie("userId");
+                //获取信息
+                $.ajax({
+                    url:"/souljourney_war_exploded/getAllCountMessage",
+                    type:"get",
+                    success:function (data){
+                        $("#spanCreateTime").html("");
+                        let postsCount = data.userPostsCount;
+                        let spanCreateTime = "<a style=\"color: #0f0f0f\">创建时间："+data.userCreateTime+"</a>";
+                        $("#spanCreateTime").append(spanCreateTime);
+                        $("#spanFollow").html("");
+                        let spanFollow = "<a style=\"color: #0f0f0f\">关注："+data.userFollowCount+"</a>";
+                        $("#spanFollow").append(spanFollow);
+                        $("#spanFans").html("");
+                        let spanFans = "<a style=\"color: #0f0f0f\">粉丝："+data.userFansCount+"</a>";
+                        $("#spanFans").append(spanFans);
+                        $("#spanPosts").html("");
+                        let spanPosts = "<a style=\"color: #0f0f0f\">"+postsCount+"</a>";
+                        $("#spanPosts").append(spanPosts);
+
+                        $("#allPageNumber").html("");
+                        let allPageCount = Math.ceil(postsCount/5);
+                        $("#allPageNumber").append(allPageCount);
+
+                        console.log("总页数为："+allPageCount);
+
+                    }
+                })
+
+                //获取头像
+                $.ajax({
+                    url: "/souljourney_war_exploded/getUserAvatar?userUid="+$.cookie("userUid"),
+                    type: "get",
+                    success:function (data){
+                        if (data!=null){
+                            $("#userAvatar").html("");
+                            let userAvatar = "<img  alt=\"100%x180\" style=\"height: 180px; width: 100%; display: block;\" src=\""+ data.userAvatar +"\" data-holder-rendered=\"true\">"
+                            $("#userAvatar").append(userAvatar);
+                        }
+                    }
+                })
+
+                //获取默认的第一页对应的页面数据
+                $.ajax({
+                    url:"/souljourney_war_exploded/getPostsByUserId?userId="+$.cookie("userId")+"&pageIndex="+0,
+                    type:"get",
+                    success:function (data){
+                        $("#userPostsList").html("");
+                        let postContent;
+                        $.each(data , function (key,val){
+
+                            let postType = val.postType;
+                            if (postType == "文章"){
+                                let postcontent = val.postContent.substring(0,20);
+                                postContent = "<a href=\"articleContent.html?postId="+ val.postId +"\">"+postcontent+"</a>";
+                            }else if (postType == "闲聊"){
+                                let postcontent = val.postChat.substring(0,20);
+                                postContent = "<a href=\"chatContent.html?postId="+ val.postId +"\">"+postcontent+"</a>";
+                            }else if (postType == "绘画"){
+                                postContent = "<a href=\"imageContent.html?postId="+ val.postId +"\">"+"这是一个绘画贴，详情请点击查看。"+"</a>";
+                            }else {
+                                postContent = "<a href=\"videoContent.html?postId="+ val.postId +"\">"+"这是一个视频贴，详情请点击查看。"+"</a>";
+                            }
+
+                            //帖子列表主体
+                            let userPostItem = "<div id=\"userPostsList\">\n" +
+                                "<div class=\"panel panel-warning\">\n" +
+                                "<div class=\"panel-heading\">\n" +
+                                "<h3 class=\"panel-title\">"+val.postTitle+ "&nbsp;<small><a href=\"#\" role=\"button\" data-toggle=\"modal\" data-target=\"#updateModal\" onclick=\"updatepost("+ val.postId +")\">编辑</a></small>&nbsp;/&nbsp;<small><a href=\"#\" role=\"button\" onclick=\"deletepost("+ val.postId +")\">删除</a></small></h3>\n" +
+                                "</div>\n" +
+                                "<div class=\"panel-body\">\n" + postContent + "</div>\n" +
+                                "</div>\n" +
+                                "</div>";
+
+                            $("#userPostsList").append(userPostItem);
+                        })
+
+                    }
+                })
+        })
+
+        //修改头像
+        function updateAvatar(){
+            let file = document.getElementById("updateUserAvatar").files[0];
+            let formData = new FormData();
+            if (file != null){
+                let userUid = encodeURIComponent($.cookie("userUid"));
+                formData.append("userUid", userUid);
+                formData.append("filelist", file);
+            }
+            $.ajax({
+                url:"/souljourney_war_exploded/userAvatarUpload",
+                type:"post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                async:false,
+                success:function (data){
+                    if (data == 0){
+                        //上传成功
+                        alert("修改成功！");
+                        location.reload(true);
+                    }else{
+                        alert("上传失败！");
+                    }
+                }
+            })
+        }
+
+        //分页按钮事件
+        function pageClick(pageOrder) {
+            console.log(pageOrder);
+            //上传到数据库查询的实际页码为：网页页码 - 1，如：网页显示的页码：第1页 → 实际上传的页码：0
+            let nextPage = 1;//实际上传的下一页页码下标
+            let nowPage = document.getElementById("nowPageNumber").innerText;//当前的页码
+            let countPosts = document.getElementById("spanPosts").innerText;//帖子总数
+            let allPageCount = Math.ceil(countPosts/5);//网页所需分页页数
+
+            if (pageOrder == "previousPage") {//点击上一页按钮
+                //跳转到上一页
+                if (nowPage == 1){
+                    //如果已经是首页，点击上一页按钮则跳转回首页
+                    nextPage = 0;
+                }else {
+                    nextPage = nowPage - 2;
+                }
+            } else if (pageOrder == "nextPage") {//点击下一页按钮
+                //跳转到下一页
+                if (nowPage == allPageCount){
+                    //如果已经是最后一页，点击下一页按钮则跳转回最后一页
+                    nextPage = nowPage - 1;
+                }else {
+                    nextPage = nowPage;
+                }
+            }
+
+            //改变当前页面的页码
+            $("#nowPageNumber").html("");
+            $("#nowPageNumber").append(Number(nextPage)+Number("1"));
+
+            //获取页码对应的页面数据
+            $.ajax({
+                url:"/souljourney_war_exploded/getPostsByUserId?userId="+$.cookie("userId")+"&pageIndex="+nextPage,
+                type:"get",
+                success:function (data){
+                    $("#userPostsList").html("");
+                    let postContent;
+                    $.each(data , function (key,val){
+
+                        let postType = val.postType;
+                        if (postType == "文章"){
+                            let postcontent = val.postContent.substring(0,20);
+                            postContent = "<a href=\"articleContent.html?postId="+ val.postId +"\">"+postcontent+"</a>";
+                        }else if (postType == "闲聊"){
+                            let postcontent = val.postChat.substring(0,20);
+                            postContent = "<a href=\"chatContent.html?postId="+ val.postId +"\">"+postcontent+"</a>";
+                        }else if (postType == "绘画"){
+                            postContent = "<a href=\"imageContent.html?postId="+ val.postId +"\">"+"这是一个绘画贴，详情请点击查看。"+"</a>";
+                        }else {
+                            postContent = "<a href=\"videoContent.html?postId="+ val.postId +"\">"+"这是一个视频贴，详情请点击查看。"+"</a>";
+                        }
+
+                        //帖子列表主体
+                        let userPostItem = "<div id=\"userPostsList\">\n" +
+                            "                    <div class=\"panel panel-warning\">\n" +
+                            "                        <div class=\"panel-heading\">\n" +
+                            "                            <h3 class=\"panel-title\">"+val.postTitle+"&nbsp;<small><a href=\"#\" role=\"button\" data-toggle=\"modal\" data-target=\"#updateModal\" onclick=\"updatepost("+ val.postId +")\">编辑</a></small>&nbsp;/&nbsp;<small><a href=\"#\" role=\"button\" onclick=\"deletepost("+ val.postId +")\">删除</a></small></h3>\n" +
+                            "                        </div>\n" +
+                            "                        <div class=\"panel-body\">\n" + postContent +
+                            "                        </div>\n" +
+                            "                    </div>\n" +
+                            "                </div>";
+
+                        $("#userPostsList").append(userPostItem);
+                    })
+                }
+            })
+
+        }
+
+
+    </script>
+
+</head>
+<body class="allUserBody">
+<!--顶部导航栏-->
+<div class="allTop">
+    <div class="col-md-10">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+    <!--登录区域-->
+    <div class="col-md-2">
+        <ul id="welcome" class="nav nav-pills">
+            <li role="presentation"><a href="userLogin.html">登录</a></li>
+            <li role="presentation"><a href="#">你好，旅客</a></li>
+        </ul>
+    </div>
+
+</div>
+
+
+<!--主界面-->
+<div class="mainBody">
+
+    <!--主界面导航栏-->
+    <nav class="navbar navbar-default mainNavbar">
+        <div class="container-fluid">
+            <!-- LOGO -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SOULJourney</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="index.html">首页 <span class="sr-only">(current)</span></a></li>
+                    <li><a href="articleList.html">文章</a></li>
+                    <li><a href="imageList.html">绘画</a></li>
+                    <li><a href="videoList.html">视频</a></li>
+                    <li><a href="chatList.html">杂谈</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" id="searchpostTitle">
+                    </div>
+                    <button type="button" class="btn btn-default" onclick="findpost()">站内搜索</button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <!--主界面内容-->
+        <div class="col-md-10 mainContent">
+            <div class="row">
+                <!--路径导航-->
+                <ol class="breadcrumb">
+                    <li><a href="index.html">首页</a></li>
+                    <li class="active">个人中心</li>
+                </ol>
+            </div>
+
+            <div class="row">
+                <!--个人中心头部内容：头像、昵称、创建时间、关注、粉丝、发帖量-->
+                <div class="col-xs-6 col-md-2">
+                    <a href="#" class="thumbnail" id="userAvatar" data-toggle="modal" data-target="#myModal">
+                        <img alt="100%x180" style="height: 180px; width: 100%; display: block;" src="" data-holder-rendered="true">
+                    </a>
+                </div>
+                <span id="spanUserName"><h2>昵称</h2></span>
+                <hr style="border: 1px solid #DCDCDC;">
+                <span id="spanCreateTime">创建时间：</span><br>
+                <span id="spanFollow">关注：</span><br>
+                <span id="spanFans">粉丝：</span><br>
+                <span>发帖量：<span id="spanPosts"></span></span>
+            </div>
+
+
+            <div class="row">
+                <hr style="border: 1px solid #DCDCDC;">
+                <!--个人中心底部内容：帖子列表-->
+                <span><h2 style="margin-left: 20px">我的帖子</h2></span>
+                <hr style="border: 1px solid #DCDCDC;">
+
+
+                <!--帖子列表主体-->
+                <div id="userPostsList">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Panel title</h3>
+                        </div>
+                        <div class="panel-body">
+                            Panel content
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!--分页按钮-->
+                <nav aria-label="Page navigation">
+                    <ul class="pager">
+                        <li id="previousBtn" onclick="pageClick('previousPage')"><a href="#">Previous</a></li>
+                        <li><span>当前页码：<a id="nowPageNumber">1</a></span></li>
+                        <li><span>总页数：<a id="allPageNumber">1</a></span></li>
+                        <li id="nextBtn" onclick="pageClick('nextPage')"><a href="#">Next</a></li>
+                    </ul>
+                </nav>
+
+            </div>
+
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>
+
+<!-- 修改头像的Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">修改头像</h4>
+            </div>
+            <div class="modal-body">
+                <input id="updateUserAvatar" type="file" accept=".png, .jpeg, .jpg">
+                选择头像图片
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="updateAvatar()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改帖子的Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModallabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="updateModallabel">修改帖子<a id="checkPostId"></a></h4>
+            </div>
+            <div class="modal-body">
+                <label for="newPostTitle">帖子标题：</label><input type="text" class="form-control" id="newPostTitle"/>
+                <label for="newPostContent">帖子内容：</label>
+                <textarea id="newPostContent" class="form-control" rows="10" style="resize:none;"></textarea><br>
+            </div>
+            <div class="modal-footer" id="foot">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

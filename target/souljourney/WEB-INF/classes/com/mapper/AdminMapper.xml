@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.AdminMapper">
+
+    <select id="getAdminByUid" parameterType="String" resultType="com.entity.Admin">
+        select * from admin where adminUid = #{adminUid}
+    </select>
+
+    <select id="getAdminById" parameterType="Integer" resultType="com.entity.Admin">
+        select * from admin where adminId = #{adminId}
+    </select>
+
+    <select id="getAllAdmin" parameterType="Integer" resultType="com.entity.Admin">
+        SELECT * FROM admin WHERE adminId <![CDATA[<=]]>
+             (select adminId from admin order by adminId desc limit #{pageIndex}, 1)
+        ORDER BY adminId desc LIMIT 5
+    </select>
+
+    <select id="getAdminRights" parameterType="Integer" resultType="com.entity.AdminRights">
+        select * from rights where rightsAdminId = #{rightsAdminId}
+    </select>
+
+    <insert id="addAdmin">
+        insert into admin(adminUid,adminPassword,adminName) values (#{adminUid},#{adminPassword},#{adminName})
+    </insert>
+
+    <insert id="addNewRights">
+        insert into rights(rightsAdminId) values (#{rightsAdminId})
+    </insert>
+
+    <update id="onAdminRights">
+        update rights set rightsNotice='1',rightsPost='1',rightsUser='1'
+        where rightsAdminId = #{rightsAdminId}
+    </update>
+
+    <update id="offAdminRights">
+        update rights set rightsNotice='0',rightsPost='0',rightsUser='0'
+        where rightsAdminId = #{rightsAdminId}
+    </update>
+
+    <select id="getAdminCounts" resultType="int">
+        select count(*) from admin
+    </select>
+</mapper>

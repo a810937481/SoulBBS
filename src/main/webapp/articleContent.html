@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文章详情</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/ajaxLogin.js"></script>
+    <script src="static/js/searchPosts.js"></script>
+    <script src="static/js/postStateMessage.js"></script>
+
+    <script>
+        $(function (){
+            let url=window.location.search; //获取url中"?"符后的字串
+            let PostId;
+            console.log(url);
+            if(url.indexOf("?")!=-1){
+                let id = url.slice(url.indexOf("=")+1);
+                PostId = url.split('=');
+                console.log(PostId[1]);
+            };
+            //点击量+1
+            $.ajax({
+                url:"/souljourney_war_exploded/postHitsUp?postId="+PostId[1],
+                type:"post",
+                success:function(data){
+                    if (data){
+                        console.log("+1成功");
+                    }else {
+                        console.log("+1失败");
+                    }
+                }
+            })
+
+            //获取评论的总数
+            $.ajax({
+                url:"/souljourney_war_exploded/getCommentsCountByPostId?commentPostId="+PostId[1],
+                type:"get",
+                success:function (data){
+                    $("#allPageNumber").html("");
+                    let allPageCount = Math.ceil(data.commentsCount/5);
+                    $("#allPageNumber").append(allPageCount);
+                    console.log("评论总页数为："+allPageCount);
+                }
+            })
+
+            $.ajax({
+                url:"/souljourney_war_exploded/getPost?postId="+PostId[1],
+                type:"get",
+                success:function (data){
+                    $("#postMain").html("");
+                    let postTitle = "<h1>"+ data.postTitle +"</h1>\n" +
+                        "<small>"+ data.postCreateTime +"&nbsp;&nbsp;热度："+ data.postHits +"</small>\n"
+                        "<hr style=\"border: 1px solid #DCDCDC;\">";
+                    $("#postMain").append(postTitle);
+                    $.ajax({
+                        url: "/souljourney_war_exploded/getUser?userId="+data.postUserId,
+                        type: "get",
+                        success:function (data){
+                            $("#postUser").html("");
+                            let followBtn;
+                            let userid = data.userId;
+                            if (data.userId==$.cookie("userId")){
+                                $("#followBtn").html("");
+                                followBtn = "<a href=\"#\" class=\"btn btn-primary disabled\" role=\"button\">是本人啦~</a>";
+                                $("#followBtn").append(followBtn);
+                            }else {
+                                //检测是否已关注
+                                $.ajax({
+                                    url:"/souljourney_war_exploded/insureFollow?friendsUserId="+$.cookie("userId")+"&friendsFollowedId="+userid,
+                                    type:"get",
+                                    success:function (data){
+                                        if (data==1){
+                                            $("#followBtn").html("");
+                                            followBtn = "<a onclick=\"cancelFollow("+ userid +")\" href=\"#\" class=\"btn btn-default\" role=\"button\">√已关注</a>"
+                                            $("#followBtn").append(followBtn);
+                                        }else {
+                                            $("#followBtn").html("");
+                                            followBtn = "<a onclick=\"follow("+ userid +")\" href=\"#\" class=\"btn btn-primary\" role=\"button\">关注</a>";
+                                            $("#followBtn").append(followBtn);
+                                        }
+                                    }
+                                })
+                            }
+                            let user = "<div class=\"row\">\n" +
+                                "  <div class=\"\">\n" +
+                                "    <div class=\"thumbnail\">\n" +
+                                "      <img alt=\"100%x180\" src=\""+ data.userAvatar +"\" data-holder-rendered=\"true\" style=\"height: 180px; width: 100%; display: block;\">\n" +
+                                "      <div class=\"caption\">\n" +
+                                "        <h3 id=\"datausername\">"+ data.userName +"</h3>\n" +
+                                "        <p id=\"followBtn\"></p>\n" +
+                                "      </div>\n" +
+                                "    </div>\n" +
+                                "  </div>\n" +
+                                "</div>";
+                            $("#postUser").append(user);
+                        }
+                    })
+                    let postContent =  "<p style='white-space: pre-line;word-break:break-all;width: 100%'>"+ data.postContent +"</p>" ;
+                    $("#postMain").append(postContent);
+                }
+            })
+
+            //第一页的默认内容
+            $.ajax({
+                url:"/souljourney_war_exploded/getCommentsByPostId?commentPostId="+ PostId[1] +"&pageIndex="+0,
+                type:"get",
+                success:function (data){
+                    $("#comment").html("");
+                    $.each(data , function (key,val){
+                        let userid = val.commentUserId;
+                        let commentCreateTime = val.commentCreateTime;
+                        let commentContent = val.commentContent;
+                        let commentId = val.commentId;
+                        $.ajax({
+                            url:"/souljourney_war_exploded/getUser?userId="+userid,
+                            type:"get",
+                            success:function (data2){
+                                let useravatar = data2.userAvatar;
+                                let username = data2.userName;
+                                let deletecomment;
+                                if (userid == $.cookie("userId") || $.cookie("userName") == document.getElementById("datausername").innerText){
+                                    deletecomment = "<a onclick=\"deleteComment("+ commentId +")\" href=\"#\" class=\"btn\" role=\"button\">删除</a>";
+                                }else {
+                                    deletecomment = "";
+                                }
+
+                                let commentcontent = " <div class=\"media\">\n" +
+                                    "<div class=\"media-left\">\n" +
+                                    "<a href=\"#\">\n" +
+                                    "<img class=\"media-object\" alt=\"64x64\" src=\""+ useravatar +"\" data-holder-rendered=\"true\" style=\"width: 64px; height: 64px;\">\n" +
+                                    "</a>\n" +
+                                    "</div>" +
+                                    "<div class=\"media-body\" >\n" +
+                                    "<h4 class=\"media-heading\">"+ username +"<small>"+ commentCreateTime +"</small></h4>" +
+                                    "<p style='white-space: pre-line;word-break:break-all;width: 100%'>" + commentContent + "</p>"+
+                                    deletecomment+
+                                    "</div>"+
+                                    "</div>";
+                                $("#comment").append(commentcontent);
+                            }
+                        });
+                    })
+                }
+            })
+
+            //添加评论
+            $("#addCommentBtn").html("");
+            let addcommentbtn = "<button onclick=\"addComment("+ PostId[1] +")\" type=\"button\" class=\"btn btn-default\">发表评论</button>";
+            $("#addCommentBtn").append(addcommentbtn);
+
+        })
+
+        function follow(userId){
+            $.ajax({
+                url:"/souljourney_war_exploded/followSomeone?friendsUserId="+$.cookie("userId")+"&friendsFollowedId="+userId,
+                type:"get",
+                success:function (data){
+                    if (data==1){
+                        $("#followBtn").html("");
+                        let newFollowBtn = "<a onclick=\"cancelFollow("+ userId +")\" href=\"#\" class=\"btn btn-default\" role=\"button\">√已关注</a>";
+                        $("#followBtn").append(newFollowBtn);
+                    }else {
+                        console.log("系统出错");
+                    }
+                }
+            })
+        }
+
+        function cancelFollow(userId){
+            $.ajax({
+                url:"/souljourney_war_exploded/deleteFollow?friendsUserId="+$.cookie("userId")+"&friendsFollowedId="+userId,
+                type:"get",
+                success:function (data){
+                    if (data==1){
+                        $("#followBtn").html("");
+                        let newFollowBtn = "<a onclick=\"follow("+ userId +")\" href=\"#\" class=\"btn btn-primary\" role=\"button\">关注</a>";
+                        $("#followBtn").append(newFollowBtn);
+                    }else {
+                        console.log("系统出错");
+                    }
+                }
+            })
+        }
+
+        //删除评论
+        function deleteComment(commentId){
+            $.ajax({
+                url:"/souljourney_war_exploded/deleteComment?commentId="+commentId,
+                type:"get",
+                success:function (data){
+                    if (data == 1){
+                        //删除评论成功
+                        location.reload(true);
+                    }else {
+                        alert("删除失败");
+                    }
+                }
+            })
+        }
+
+        //添加评论
+        function addComment(postId){
+            let newCommentContent = $("#newComment").val();
+            $.ajax({
+                url:"/souljourney_war_exploded/addComment?commentPostId="+postId+"&commentUserId="+$.cookie("userId")+"&commentContent="+newCommentContent,
+                type:"get",
+                success:function (data){
+                    if (data == 1){
+                        //添加评论成功
+                        location.reload(true);
+                    }else {
+                        alert("添加失败");
+                    }
+                }
+            })
+        }
+
+        //分页按钮事件
+        function pageClick(pageOrder) {
+            let url=window.location.search; //获取url中"?"符后的字串
+            let PostId;
+            console.log(url);
+            if(url.indexOf("?")!=-1){
+                PostId = url.split('=');
+            };
+            console.log(pageOrder);
+            //上传到数据库查询的实际页码为：网页页码 - 1，如：网页显示的页码：第1页 → 实际上传的页码：0
+            let nextPage;//实际上传的下一页页码下标
+            let nowPage = document.getElementById("nowPageNumber").innerText;//当前的页码
+            let allPageCount = document.getElementById("allPageNumber").innerText;//网页所需分页页数
+
+            if (pageOrder == "previousPage") {//点击上一页按钮
+                //跳转到上一页
+                if (nowPage == 1){
+                    //如果已经是首页，点击上一页按钮则跳转回首页
+                    console.log("已经是首页");
+                    nextPage = 0;
+                }else {
+                    console.log("到上一页的实际页码下标");
+                    nextPage = nowPage - 2;
+                }
+            } else if (pageOrder == "nextPage") {//点击下一页按钮
+                //跳转到下一页
+                if (nowPage == allPageCount){
+                    //如果已经是最后一页，点击下一页按钮则跳转回最后一页
+                    console.log("已经是尾页");
+                    nextPage = nowPage - 1;
+                }else {
+                    console.log("到下一页的实际页码下标");
+                    nextPage = nowPage;
+                }
+            }
+
+            console.log(nextPage);
+
+            //改变当前页面的页码
+            $("#nowPageNumber").html("");
+            $("#nowPageNumber").append(Number(nextPage)+Number("1"));
+
+            //获取页码对应的页面数据
+            $.ajax({
+                url:"/souljourney_war_exploded/getCommentsByPostId?commentPostId="+ PostId[1] +"&pageIndex="+nextPage,
+                type:"get",
+                success:function (data){
+                    $("#comment").html("");
+                    $.each(data , function (key,val){
+                        let userid = val.commentUserId;
+                        let commentCreateTime = val.commentCreateTime;
+                        let commentContent = val.commentContent;
+                        let commentId = val.commentId;
+                        $.ajax({
+                            url:"/souljourney_war_exploded/getUser?userId="+userid,
+                            type:"get",
+                            success:function (data2){
+                                let useravatar = data2.userAvatar;
+                                let username = data2.userName;
+                                let deletecomment;
+                                if (userid == $.cookie("userId") || $.cookie("userName") == document.getElementById("datausername").innerText){
+                                    deletecomment = "<a onclick=\"deleteComment("+ commentId +")\" href=\"#\" class=\"btn\" role=\"button\">删除</a>";
+                                }else {
+                                    deletecomment = "";
+                                }
+
+                                let commentcontent = " <div class=\"media\">\n" +
+                                    "<div class=\"media-left\">\n" +
+                                    "<a href=\"#\">\n" +
+                                    "<img class=\"media-object\" alt=\"64x64\" src=\""+ useravatar +"\" data-holder-rendered=\"true\" style=\"width: 64px; height: 64px;\">\n" +
+                                    "</a>\n" +
+                                    "</div>" +
+                                    "<div class=\"media-body\" >\n" +
+                                    "<h4 class=\"media-heading\">"+ username +"<small>"+ commentCreateTime +"</small></h4>" +
+                                    "<p style='white-space: pre-line;word-break:break-all;width: 100%'>" + commentContent + "</p>"+
+                                    deletecomment+
+                                    "</div>"+
+                                    "</div>";
+                                $("#comment").append(commentcontent);
+                            }
+                        });
+                    })
+                }
+            })
+        }
+
+
+
+    </script>
+
+</head>
+<body class="allUserBody">
+
+<!--顶部导航栏-->
+<div class="allTop">
+    <div class="col-md-10">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+    <!--登录区域-->
+    <div class="col-md-2">
+        <ul id="welcome" class="nav nav-pills">
+            <li role="presentation"><a href="userLogin.html">登录</a></li>
+            <li role="presentation"><a href="#">你好，旅客</a></li>
+        </ul>
+    </div>
+
+</div>
+
+
+<!--主界面-->
+<div class="mainBody">
+
+    <!--主界面导航栏-->
+    <nav class="navbar navbar-default mainNavbar">
+        <div class="container-fluid">
+            <!-- LOGO -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SOULJourney</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="index.html">首页 <span class="sr-only">(current)</span></a></li>
+                    <li class="active"><a href="articleList.html">文章</a></li>
+                    <li><a href="imageList.html">绘画</a></li>
+                    <li><a href="videoList.html">视频</a></li>
+                    <li><a href="chatList.html">杂谈</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" id="searchpostTitle">
+                    </div>
+                    <button type="button" class="btn btn-default" onclick="findpost()">站内搜索</button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <!--主界面内容-->
+        <div class="col-md-10 mainContent">
+            <div class="row">
+                <!--路径导航-->
+                <ol class="breadcrumb">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="articleList.html">文章列表</a></li>
+                    <li class="active">文章详情</li>
+                </ol>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+                <div class="jumbotron">
+                    <div class="container">
+                        <div class="col-md-10" id="postMain">
+
+                        </div>
+                        <div class="col-md-2" id="postUser">
+
+                        </div>
+                    </div>
+                </div>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+                <!--评论区-->
+                <div id="comment" style="width: 95%;margin-left: auto;margin-right: auto">
+
+
+                </div>
+
+                <!--分页按钮-->
+                <nav aria-label="Page navigation">
+                    <ul class="pager">
+                        <li id="previousBtn" onclick="pageClick('previousPage')"><a href="#">Previous</a></li>
+                        <li><span>当前页码：<a id="nowPageNumber">1</a></span></li>
+                        <li><span>总页数：<a id="allPageNumber">1</a></span></li>
+                        <li id="nextBtn" onclick="pageClick('nextPage')"><a href="#">Next</a></li>
+                    </ul>
+                </nav>
+
+                <hr style="border: 1px solid #DCDCDC;">
+
+                <!--发表评论-->
+                <form class="form-horizontal" style="width: 90%;margin-left: auto;margin-right: auto">
+                    <div class="form-group">
+                        <input id="newComment" type="text" class="form-control" placeholder="请输入评论">
+                    </div>
+                    <div class="form-group" id="addCommentBtn">
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>
+
+</body>
+</html>

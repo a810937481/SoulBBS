@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.UserMapper">
+    
+    <select id="getUserByUid" parameterType="String" resultType="com.entity.User">
+        select * from user where userUid = #{userUid}
+    </select>
+
+    <select id="getUserById" parameterType="int" resultType="com.entity.User">
+        select * from user where userId = #{userId}
+    </select>
+
+    <select id="getUserUidByUid" parameterType="String" resultType="String">
+        select userUid from user where userUid = #{userUid}
+    </select>
+
+    <select id="getUserNameByName" parameterType="String" resultType="String">
+        select userName from user where userName = #{userName}
+    </select>
+
+    <select id="getUserEmailByUid" parameterType="String" resultType="String">
+        select userEmail from user where userUid = #{userUid}
+    </select>
+
+    <select id="getUserAvatarByUid" parameterType="String" resultType="String">
+        select userAvatar from user where userUid = #{userUid}
+    </select>
+
+    <select id="getUserCreateTimeById" parameterType="int" resultType="String">
+        select userCreateTime from user where userId = #{userId}
+    </select>
+
+    <select id="getUserFollowsCountById" parameterType="int" resultType="int">
+        select count(*) from friends where friendsUserId = #{userId}
+    </select>
+
+    <select id="getUserFansCountById" parameterType="int" resultType="int">
+        select count(*) from friends where friendsFollowedId = #{userId}
+    </select>
+
+    <select id="getUserPostsCountById" parameterType="int" resultType="int">
+        select count(*) from post where postUserId = #{userId}
+    </select>
+
+    <insert id="addUser">
+        insert into user(userUid,userPassword,userName,userEmail,userAvatar) values (#{userUid},#{userPassword},#{userName},#{userEmail},'static/resource/3a13f34b-ca1a-4fd3-912a-5018df6ea25b.jpg')
+    </insert>
+
+    <update id="updateUserPassword">
+        update user set
+        userPassword = #{userPassword}
+        where userUid = #{userUid}
+    </update>
+
+    <update id="updateUsrAvatarByUid">
+        update user set
+        userAvatar = #{userAvatar}
+        where userUid = #{userUid}
+    </update>
+
+    <select id="getAllUser" parameterType="Integer" resultType="com.entity.User">
+        SELECT * FROM user WHERE userId <![CDATA[<=]]>
+            (select userId from user order by userId desc limit #{pageIndex}, 1)
+        ORDER BY userId desc LIMIT 5;
+    </select>
+
+    <update id="updateUserState">
+        update user set
+            userState = #{userState}
+        where userId = #{userId}
+    </update>
+
+    <select id="userCount" resultType="Integer">
+        select count(*) from user
+    </select>
+        
+</mapper>

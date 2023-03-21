@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.PostMessageMapper">
+
+    <select id="getPostMessage" parameterType="int" resultType="com.entity.PostMessage">
+        select * from post_message where pmUserId = #{pmUserId}
+    </select>
+
+    <insert id="addPostMessage">
+        insert into post_message(pmUserId,pmPostId,pmPostState) values (#{pmUserId},#{pmPostId},#{pmPostState})
+    </insert>
+
+    <delete id="deletePostMessage" parameterType="Integer">
+        delete from post_message where pmId=#{pmId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.PostMapper">
+
+    <!--分页-->
+    <select id="getPostsByUserId" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postUserId = #{userId} and postId <![CDATA[<=]]>
+            (select postId from post where postUserId = #{userId} order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 5
+    </select>
+
+    <select id="getArticlePosts" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postType = 0 and postState = 1 and postId <![CDATA[<=]]>
+            (select postId from post where postType = 0 and postState = 1 order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getChatPosts" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postType = 1 and postState = 1 and postId <![CDATA[<=]]>
+            (select postId from post where postType = 1 and postState = 1 order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getImagePosts" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postType = 2 and postState = 1 and postId <![CDATA[<=]]>
+            (select postId from post where postType = 2 and postState = 1 order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getVideoPosts" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postType = 3 and postState = 1 and postId <![CDATA[<=]]>
+            (select postId from post where postType = 3 and postState = 1 order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getAllPosts" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postId <![CDATA[<=]]>
+            (select postId from post order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getPostsByPostState" parameterType="Integer" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postState = #{postState} and postId <![CDATA[<=]]>
+            (select postId from post where postState = #{postState} order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="getAllPostsWithoutPage" resultType="com.entity.Post">
+        select * from post
+    </select>
+
+    <select id="getPostBypostId" parameterType="int" resultType="com.entity.Post">
+        select * from post where postId = #{postId}
+    </select>
+
+    <update id="updatePost">
+        update post set
+            postTitle = #{postTitle},postContent = #{postContent},postState = 0
+        where postId = #{postId}
+    </update>
+
+    <update id="updateChatPost">
+        update post set
+                        postTitle = #{postTitle},postChat = #{postChat},postState = 0
+        where postId = #{postId}
+    </update>
+
+    <update id="updatePostState">
+        update post set
+            postState = #{postState}
+        where postId = #{postId}
+    </update>
+
+    <delete id="deletePost" parameterType="Integer">
+        delete from post where postId=#{postId}
+    </delete>
+
+
+    <select id="getPostsCountByPostType" parameterType="int" resultType="int">
+        select count(*) from post where postType = #{postType} and postState = 1
+    </select>
+
+    <insert id="addArticlePost">
+        insert into post(postTitle,postUserId,postContent) values (#{postTitle},#{postUserId},#{postContent})
+    </insert>
+
+    <insert id="addChatPost">
+        insert into post(postTitle,postUserId,postType,postChat) values (#{postTitle},#{postUserId},'1',#{postChat})
+    </insert>
+
+    <insert id="addImagePosts">
+        insert into post(postTitle,postUserId,postType,postContent,postImage) values (#{postTitle},#{postUserId},'2',#{postContent},#{postImage})
+    </insert>
+
+    <insert id="addVideoPosts">
+        insert into post(postTitle,postUserId,postType,postContent,postVideo) values (#{postTitle},#{postUserId},'3',#{postContent},#{postVideo})
+    </insert>
+
+    <select id="getPostsCountByPostState" parameterType="int" resultType="int">
+        select count(*) from post where postState = #{postState}
+    </select>
+
+    <select id="searchPost" resultType="com.entity.Post">
+        SELECT * FROM post WHERE postTitle like #{postTitle} and postState = 1 and postId <![CDATA[<=]]>
+             (select postId from post where postTitle like #{postTitle} and postState = 1 order by postId desc limit #{pageIndex}, 1)
+        ORDER BY postId desc LIMIT 10;
+    </select>
+
+    <select id="searchPostCount" parameterType="String" resultType="int">
+        select count(*) from post where postTitle like #{postTitle}
+    </select>
+
+    <update id="postHitsUp">
+        update post set
+            postHits = postHits + 1
+        where
+            postId = #{postId}
+    </update>
+
+
+</mapper>

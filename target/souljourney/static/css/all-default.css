@@ -1,0 +1,70 @@
+.allUserBody{
+    background: url(../image/allUserBody.png) repeat center 0;
+}
+
+.allTop{
+    height: 250px;
+    background: url(../image/topBackgroundImage.png) no-repeat center 0;
+}
+
+.mainBody{
+    background: url(../image/backgroundImage.png) no-repeat center 0;
+}
+
+.mainNavbar{
+    background: rgba(255,255,255,.8);
+    border: 1px solid #DCDCDC;
+    border-radius: 10px;
+}
+
+.mainContent{
+    background: rgba(255,255,255,.8);
+    border: 1px solid #DCDCDC;
+    border-radius: 10px;
+}
+
+.logo{
+    color: #46b8da
+}
+
+.small-logo{
+    color: #9acfea
+}
+
+.registerBody,.loginBody,.fpBody{
+    background: #F3F0E7;
+}
+
+.registerTop,.loginTop,.fpTop{
+    height: 35px;
+    background: rgba(255,255,255,.8);
+}
+
+.registerMainBody,.loginMainBody,.fpMainBody{
+    background: url(../image/registerBackground.jpg) no-repeat center 0;
+    height: 661px;
+}
+
+.registerLeft,.registerRight,.loginLeft,.loginRight,.fpLeft,.fpRight{
+    height: 661px;
+}
+
+.register_form,.login_form,.findPassword_form,.updatePassword_form{
+    margin:0 auto;
+    position: relative;
+    top: 50%; /*偏移*/
+    margin-top: -250px;
+    width: 500px;
+    min-height: 300px;
+    padding: 35px;
+    background: rgba(255,255,255,.8);
+    border: 1px solid #DCDCDC;
+    border-radius: 10px;
+}
+
+iframe{
+    width:100%;
+    height:600px;
+    high_quality:1;
+    danmaku:1;
+}

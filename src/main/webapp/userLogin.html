@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/all-default.css">
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+    <script src="static/js/jquery.cookie.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+
+    <script>
+        function toLogin(){
+            const userUid = $("#userUid").val().trim();
+            const userPassword = $("#userPassword").val().trim();
+            if (userUid=="" || userPassword==""){
+                alert("请输入账号密码！");
+            }else{
+                $.ajax({
+                    url:"/souljourney_war_exploded/Login?userUid="+userUid+"&userPassword="+userPassword,
+                    type:"get",
+                    success:function (data){
+                        let code = data;
+                        console.log(code);
+                        if (code == 1){
+                            //登录成功，跳转到主页
+                            window.location.href="index.html";
+                        }else if (code == 0){
+                            alert("账号不存在");
+                        }else{
+                            alert("用户名或密码错误！");
+                        }
+                        //在ajax提交过程完成后，from表单又会发起一次提交，覆盖掉之前跳转的内容
+                        //解决方案：在ajax结束的位置返回一个false，打断form的下一步提交，就能正常进行跳转了。
+                        return false;
+                    }
+                })
+            }
+        }
+    </script>
+
+</head>
+<body class="loginBody">
+
+<div class="loginTop">
+    <div class="col-md-12">
+        <h4 class="logo">SOULJourney<small class="small-logo">一个研究魂类游戏文化的硬核社区</small></h4>
+    </div>
+</div>
+
+<div>
+    <div class="col-md-1 loginLeft"></div>
+    <div class="col-md-10 loginMainBody">
+        <div class="login_form">
+            <h3>用户登录</h3>
+            <form role="form">
+                <hr style="border: 1px solid #DCDCDC;">
+                <div class="form-group">
+                    <label for="userUid">用户名：</label><input type="text" class="form-control" id="userUid" />
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">密码：</label><input type="password" class="form-control" id="userPassword" />
+                </div>
+                <a href="userRegister.html" style="margin:auto">>>立即注册</a> <a href="userFindPassword.html" style="margin-left: 20px">>>忘记密码</a>
+                <hr style="border: 1px solid #DCDCDC;">
+                <button id="sendBtn" type="button" class="btn btn-default" style="background-color: #F2F2F2;margin-left:260px" onclick="toLogin()" onsubmit="return false">登录SOULJourney</button>
+                <hr style="border: 1px solid #DCDCDC;">
+            </form>
+        </div>
+    </div>
+    <div class="col-md-1 loginRight"></div>
+</div>
+
+<div class="loginBottom">
+    <hr style="border: 1px solid #DCDCDC;">
+    <h5 style="text-align: center">&copy;象征意义的版权说明</h5>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.CommentMapper">
+
+    <select id="getComment" parameterType="Integer" resultType="com.entity.Comment">
+        SELECT * FROM comment WHERE commentPostId = #{commentPostId} and commentId <![CDATA[<=]]>
+            (select commentId from comment where commentPostId = #{commentPostId} order by commentId desc limit #{pageIndex}, 1)
+        ORDER BY commentId desc LIMIT 5
+    </select>
+
+    <select id="getCommentsCountByPostId" parameterType="int" resultType="int">
+        select count(*) from comment where commentPostId = #{commentPostId}
+    </select>
+
+    <insert id="addComment">
+        insert into comment(commentPostId,commentUserId,commentContent) values (#{commentPostId},#{commentUserId},#{commentContent})
+    </insert>
+
+    <delete id="deleteComment" parameterType="Integer">
+        delete from comment where commentId=#{commentId}
+    </delete>
+
+</mapper>
