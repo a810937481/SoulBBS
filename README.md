@@ -1,6 +1,6 @@
 # SoulBBS
 ## 介绍
-毕业设计项目，系统环境采用 Windows10，使用以 Java 语言为基础的 SSM 框架。数据库的选择为 MySQL，数据库连接则是 JDBC 技术，同时选用了 Apache Tomcat-9.0.44 服务器以及IntelliJ IDEA 2021.3.2（Ultimate Edition）开发工具。
+仅用于学习的毕业设计项目，使用以 Java 语言为基础的 SSM 框架。数据库的选择为 MySQL，数据库连接则是 JDBC ，同时选用了 Apache Tomcat-9.0.44 服务器以及IntelliJ IDEA 2021.3.2（Ultimate Edition）开发工具。
 ## 功能结构设计
 本论坛系统主要分为管理员与个人用户两大模块。所有功能围绕这两大模块进行设计。系统功能结构框架图如下：
 ![image](https://user-images.githubusercontent.com/51551352/232688896-a97131bf-ddbe-44e1-86c3-8c8ef41b1d44.png)
